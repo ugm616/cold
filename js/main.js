@@ -8,6 +8,7 @@ class GameLoader {
         this.loadingText = this.loadingScreen.querySelector('.loading-text');
         this.progress = 0;
         this.isLoaded = false;
+        this.processedEvents = new Set();
         
         // Game state
         this.currentUser = 'ugm616';
