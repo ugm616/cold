@@ -14,15 +14,16 @@
         <div class="header">
             <div class="title">GLOBAL STRATEGY 1985</div>
             <div class="menu-bar">
-                <button class="menu-btn" onclick="openMenu('allies')">ALLIES</button>
-                <button class="menu-btn" onclick="openMenu('upgrades')">UPGRADES</button>
-                <button class="menu-btn" onclick="openMenu('stats')">STATS</button>
-                <button class="menu-btn" onclick="openMenu('help')">HELP</button>
+                <button class="menu-btn" id="alliesBtn">ALLIES</button>
+                <button class="menu-btn" id="upgradesBtn">UPGRADES</button>
+                <button class="menu-btn" id="statsBtn">STATS</button>
+                <button class="menu-btn" id="helpBtn">HELP</button>
                 <button class="menu-btn" id="createPlanetBtn">NEW PLANET</button>
             </div>
             <div class="user-info">
-                <span class="user-login">CMDR: ${ugm616}</span>
-                <span class="game-time">TIME: 1985-01-01 00:00:00</span>
+                <span class="user-login">CMDR: ugm616</span>
+                <span class="game-time" id="timeDisplay">TIME: 1985-01-01 00:00:00</span>
+                <span class="real-time">REAL: 2025-02-17 14:36:28</span>
             </div>
         </div>
 
@@ -41,8 +42,13 @@
                 <canvas id="gameCanvas"></canvas>
                 <div class="map-controls">
                     <div class="zoom-controls">
-                        <button class="control-btn" onclick="mapSystem.zoom(1.1)">+</button>
-                        <button class="control-btn" onclick="mapSystem.zoom(0.9)">-</button>
+                        <button class="control-btn" id="zoomInBtn">+</button>
+                        <button class="control-btn" id="zoomOutBtn">-</button>
+                    </div>
+                    <div class="time-controls">
+                        <button class="control-btn" id="pauseBtn">⏸️</button>
+                        <button class="control-btn" id="slowDownBtn">⏪</button>
+                        <button class="control-btn" id="speedUpBtn">⏩</button>
                     </div>
                     <div class="navigation-hint">
                         DRAG TO PAN - SCROLL TO ZOOM
@@ -59,19 +65,30 @@
                 <div class="resources-panel">
                     <div class="panel-header">RESOURCES</div>
                     <div id="playerResources">
-                        <!-- Player's resources will be displayed here -->
+                        <div class="resource">
+                            <span class="resource-label">MONEY:</span>
+                            <span class="resource-value" id="moneyValue">1000</span>
+                        </div>
+                        <div class="resource">
+                            <span class="resource-label">INFLUENCE:</span>
+                            <span class="resource-value" id="influenceValue">50</span>
+                        </div>
+                        <div class="resource">
+                            <span class="resource-label">TECHNOLOGY:</span>
+                            <span class="resource-value" id="techValue">1</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Bottom Console -->
-        <div class="console-output" id="gameConsole">
+        <div class="console-container">
             <div class="console-header">
                 <span>COMMAND CONSOLE</span>
-                <button class="control-btn" onclick="clearConsole()">CLEAR</button>
+                <button class="control-btn" id="clearConsoleBtn">CLEAR</button>
             </div>
-            <div class="console-content">
+            <div class="console-output" id="gameConsole">
                 <!-- Game messages will appear here -->
             </div>
         </div>
@@ -82,7 +99,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <span class="modal-title"></span>
-                <button class="close-btn" onclick="closeModal()">X</button>
+                <button class="close-btn" data-action="close-modal">X</button>
             </div>
             <div class="modal-body"></div>
         </div>
@@ -93,7 +110,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <span class="modal-title">HELP SYSTEM</span>
-                <button class="close-btn" onclick="closeHelp()">X</button>
+                <button class="close-btn" data-action="close-help">X</button>
             </div>
             <div class="modal-body help-content">
                 <div class="help-section">
@@ -102,6 +119,8 @@
                         <li>LEFT CLICK: Select Country</li>
                         <li>DRAG: Pan Map</li>
                         <li>SCROLL: Zoom In/Out</li>
+                        <li>SPACE: Pause/Resume</li>
+                        <li>+/-: Adjust Game Speed</li>
                         <li>ESC: Cancel Action</li>
                     </ul>
                 </div>
@@ -115,6 +134,15 @@
                         <li>Air Force improves land movement</li>
                     </ul>
                 </div>
+                <div class="help-section">
+                    <h3>HOTKEYS</h3>
+                    <ul>
+                        <li>CTRL + S: Save Game</li>
+                        <li>H: Toggle Help</li>
+                        <li>M: Toggle Map Mode</li>
+                        <li>R: Reset View</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -123,23 +151,17 @@
     <div id="loadingScreen" class="loading-screen">
         <div class="loading-content">
             <div class="loading-title">GLOBAL STRATEGY 1985</div>
-            <div class="loading-bar">
-                <div class="progress-bar"></div>
+            <div class="retro-screen">
+                <div class="scan-line"></div>
+                <div class="loading-bar">
+                    <div class="progress-bar"></div>
+                </div>
             </div>
             <div class="loading-text">INITIALIZING SYSTEMS...</div>
         </div>
     </div>
 
     <!-- Game Scripts -->
-    <script src="js/mapSystem.js"></script>
-    <script src="js/planet.js"></script>
-    <script src="js/planetCreator.js"></script>
-    <script src="js/country.js"></script>
-    <script src="js/data/earthCountries.js"></script>
-    <script src="js/data/countryBorders.js"></script>
-    <script src="js/earthMap.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/gameConsole.js"></script>
-    <script src="js/main.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
