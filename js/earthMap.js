@@ -1,7 +1,7 @@
-import { COUNTRY_BORDERS_1985 } from './data/countryBorders.js';
-import { EARTH_COUNTRIES_1985 } from './data/earthCountries.js';
-import { REGION_GROUPS } from './data/regionGroups.js';
-import { ALLIANCE_STYLES } from './data/allianceStyles.js';
+import { COUNTRY_BORDERS_1985 } from '../data/countryBorders.js';
+import { EARTH_COUNTRIES_1985 } from '../data/earthCountries.js';
+import { REGION_GROUPS } from '../data/regionGroups.js';
+import { ALLIANCE_STYLES } from '../data/allianceStyles.js';
 
 class EarthMap {
     constructor(canvasId) {
