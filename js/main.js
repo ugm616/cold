@@ -1,9 +1,5 @@
-import { HISTORICAL_EVENTS_1985 } from './data/historicalEvents.js';
-import { EARTH_COUNTRIES_1985 } from './data/countries.js';
-import { COUNTRY_BORDERS_1985 } from './data/countryBorders.js';
-import { REGION_GROUPS } from './data/regionGroups.js';
-import { ALLIANCE_STYLES } from './data/allianceStyles.js';
-import EarthMap from './earthMap.js';
+import { EARTH_COUNTRIES_1985 } from '../data/earthCountries.js';
+import EarthMap from '../map/earthMap.js';
 
 class GameLoader {
     constructor() {
@@ -16,7 +12,7 @@ class GameLoader {
         // Game state
         this.currentUser = 'ugm616';
         this.gameTime = new Date('1985-01-01T00:00:00Z');
-        this.realTime = new Date('2025-02-17T14:22:15Z');
+        this.realTime = new Date('2025-02-17 15:19:03Z');
         this.timeScale = 1; // 1 real second = 1 game hour
         this.isPaused = false;
 
@@ -24,7 +20,6 @@ class GameLoader {
         this.gameUI = null;
         this.gameConsole = null;
         this.earthMap = null;
-        this.historicalEvents = HISTORICAL_EVENTS_1985;
     }
 
     async initializeGame() {
@@ -88,6 +83,9 @@ class GameLoader {
     }
 
     startGameSystems() {
+        // Initialize UI controls
+        this.initializeUI();
+
         // Start time management
         this.startTimeSystem();
 
@@ -98,13 +96,81 @@ class GameLoader {
         this.startAutosave();
     }
 
+    initializeUI() {
+        // Map controls
+        document.getElementById('zoomInBtn').addEventListener('click', () => {
+            this.earthMap.handleZoom({ preventDefault: () => {}, deltaY: -100 });
+        });
+        
+        document.getElementById('zoomOutBtn').addEventListener('click', () => {
+            this.earthMap.handleZoom({ preventDefault: () => {}, deltaY: 100 });
+        });
+        
+        document.getElementById('pauseBtn').addEventListener('click', () => {
+            this.togglePause();
+        });
+        
+        document.getElementById('slowDownBtn').addEventListener('click', () => {
+            this.decreaseTimeScale();
+        });
+        
+        document.getElementById('speedUpBtn').addEventListener('click', () => {
+            this.increaseTimeScale();
+        });
+        
+        document.getElementById('clearConsoleBtn').addEventListener('click', () => {
+            this.gameConsole.clear();
+        });
+
+        // Help button
+        document.getElementById('helpBtn').addEventListener('click', () => {
+            this.toggleHelp();
+        });
+
+        // Region filters
+        document.querySelectorAll('.region-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                this.filterByRegion(e.target.dataset.region);
+            });
+        });
+
+        // Initialize country selection handler
+        this.earthMap.canvas.addEventListener('countrySelect', (e) => {
+            this.updateCountryInfo(e.detail.country);
+        });
+    }
+
+    updateCountryInfo(country) {
+        const detailsElement = document.getElementById('countryDetails');
+        const nameElement = document.getElementById('countryName');
+        const statsElement = document.getElementById('countryStats');
+
+        if (country) {
+            nameElement.textContent = country.name;
+            statsElement.innerHTML = `
+                <div class="stat-row">Population: ${this.formatNumber(country.population)}</div>
+                <div class="stat-row">Military Tech: ${country.technology}</div>
+                <div class="stat-row">Economy: ${country.economy}</div>
+                <div class="stat-row">Stability: ${country.stability}</div>
+                <div class="stat-row">Resources: ${country.resources.join(', ')}</div>
+                ${country.military.nuclear ? '<div class="stat-row nuclear">NUCLEAR CAPABLE</div>' : ''}
+            `;
+        } else {
+            nameElement.textContent = 'Select a country';
+            statsElement.innerHTML = '';
+        }
+    }
+
     startTimeSystem() {
         // Update game time every second
         this.timeInterval = setInterval(() => {
             if (!this.isPaused) {
-                // Advance game time by one hour
+                // Advance game time by timeScale hours
                 this.gameTime.setHours(this.gameTime.getHours() + this.timeScale);
                 this.gameUI.updateGameTime(this.gameTime);
+                
+                // Update real time
+                this.updateRealTime();
                 
                 // Check for historical events
                 this.checkHistoricalEvents();
@@ -112,33 +178,56 @@ class GameLoader {
         }, 1000);
     }
 
-    initializeEventHandlers() {
-        // Pause/Resume handler
-        document.addEventListener('keydown', (e) => {
-            if (e.key === ' ') { // Space bar
-                this.togglePause();
-            }
-        });
+    updateRealTime() {
+        const realTimeElement = document.getElementById('realTimeDisplay');
+        if (realTimeElement) {
+            const now = new Date();
+            realTimeElement.textContent = `REAL: ${now.toISOString().replace('T', ' ').split('.')[0]}`;
+        }
+    }
 
-        // Time control handlers
+    initializeEventHandlers() {
+        // Global keyboard handlers
         document.addEventListener('keydown', (e) => {
             switch(e.key) {
-                case '+':
-                    this.increaseTimeScale();
+                case ' ':
+                    e.preventDefault();
+                    this.togglePause();
                     break;
-                case '-':
-                    this.decreaseTimeScale();
+                case 'h':
+                case 'H':
+                    this.toggleHelp();
+                    break;
+                case 'm':
+                case 'M':
+                    this.toggleMapMode();
+                    break;
+                case 'r':
+                case 'R':
+                    this.resetView();
+                    break;
+                case 's':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        this.saveGame();
+                    }
                     break;
             }
         });
+    }
 
-        // Save game handler
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 's') {
-                e.preventDefault();
-                this.saveGame();
-            }
-        });
+    toggleHelp() {
+        const helpModal = document.getElementById('helpModal');
+        helpModal.classList.toggle('hidden');
+    }
+
+    toggleMapMode() {
+        // Implement different map visualization modes
+        this.earthMap.toggleMapMode();
+    }
+
+    resetView() {
+        this.earthMap.resetView();
     }
 
     startGame() {
@@ -157,11 +246,11 @@ class GameLoader {
     }
 
     initializeGameState() {
+        // Initialize with existing data from earthCountries.js
+        this.countryData = EARTH_COUNTRIES_1985;
+        
         // Initialize countries and alliances
         this.initializeCountries();
-
-        // Set up initial diplomatic relations
-        this.initializeDiplomacy();
 
         // Initialize player's starting condition
         this.initializePlayerState();
@@ -169,7 +258,7 @@ class GameLoader {
 
     initializeCountries() {
         try {
-            Object.entries(EARTH_COUNTRIES_1985).forEach(([key, data]) => {
+            Object.entries(this.countryData).forEach(([key, data]) => {
                 this.earthMap.countries.set(key, data);
             });
             this.gameConsole.system('Countries initialized');
@@ -179,25 +268,7 @@ class GameLoader {
         }
     }
 
-    initializeDiplomacy() {
-        try {
-            // Set up initial alliances based on REGION_GROUPS
-            Object.entries(REGION_GROUPS).forEach(([alliance, members]) => {
-                members.forEach(country => {
-                    if (this.earthMap.countries.has(country)) {
-                        this.earthMap.countries.get(country).alliance = alliance;
-                    }
-                });
-            });
-            this.gameConsole.system('Diplomatic relations established');
-        } catch (error) {
-            this.gameConsole.error('Error initializing diplomatic relations');
-            console.error('Diplomacy initialization error:', error);
-        }
-    }
-
     initializePlayerState() {
-        // Set up initial player resources and status
         this.playerState = {
             selectedCountry: null,
             resources: {
@@ -207,24 +278,33 @@ class GameLoader {
             },
             notifications: []
         };
+        this.updateResourceDisplay();
+    }
+
+    updateResourceDisplay() {
+        document.getElementById('moneyValue').textContent = this.playerState.resources.money;
+        document.getElementById('influenceValue').textContent = this.playerState.resources.influence;
+        document.getElementById('techValue').textContent = this.playerState.resources.technology;
     }
 
     togglePause() {
         this.isPaused = !this.isPaused;
+        const pauseBtn = document.getElementById('pauseBtn');
+        pauseBtn.textContent = this.isPaused ? '▶️' : '⏸️';
         this.gameConsole.system(this.isPaused ? 'GAME PAUSED' : 'GAME RESUMED');
     }
 
     increaseTimeScale() {
-        if (this.timeScale < 24) {  // Max 24 hours per second
+        if (this.timeScale < 24) {
             this.timeScale *= 2;
-            this.gameConsole.system(`Time scale increased to ${this.timeScale}x`);
+            this.gameConsole.system(`Game speed: ${this.timeScale}x`);
         }
     }
 
     decreaseTimeScale() {
-        if (this.timeScale > 1) {  // Min 1 hour per second
+        if (this.timeScale > 1) {
             this.timeScale /= 2;
-            this.gameConsole.system(`Time scale decreased to ${this.timeScale}x`);
+            this.gameConsole.system(`Game speed: ${this.timeScale}x`);
         }
     }
 
@@ -252,55 +332,18 @@ class GameLoader {
     }
 
     checkHistoricalEvents() {
-        try {
-            // Check for events based on game time
-            const currentDate = this.gameTime.toISOString().split('T')[0];
-            if (this.historicalEvents && this.historicalEvents[currentDate]) {
-                const event = this.historicalEvents[currentDate];
-                this.gameConsole.system(`HISTORICAL EVENT: ${event.name}`);
-                this.handleHistoricalEvent(event);
+        // Check for events based on game time
+        const currentDate = this.gameTime.toISOString().split('T')[0];
+        Object.entries(this.countryData).forEach(([key, country]) => {
+            if (country.historicalContext && !this.processedEvents.has(`${key}-${currentDate}`)) {
+                this.gameConsole.info(`${country.name}: ${country.historicalContext}`);
+                this.processedEvents.add(`${key}-${currentDate}`);
             }
-        } catch (error) {
-            console.error('Error checking historical events:', error);
-            this.gameConsole.error('Error processing historical events');
-        }
-    }
-
-    handleHistoricalEvent(event) {
-        // Process event effects
-        if (event.effects && Array.isArray(event.effects)) {
-            event.effects.forEach(effect => {
-                this.applyEventEffect(effect);
-            });
-        }
-        
-        // Display event description
-        this.gameConsole.info(event.description);
-    }
-
-    applyEventEffect(effect) {
-        switch (effect.type) {
-            case 'TENSION':
-                this.adjustTension(effect.regions, effect.value);
-                break;
-            case 'DIPLOMATIC':
-                this.adjustDiplomaticRelations(effect.country, effect.value);
-                break;
-            default:
-                console.warn('Unknown effect type:', effect.type);
-        }
-    }
-
-    adjustTension(regions, value) {
-        regions.forEach(region => {
-            // Implement tension adjustment logic
-            this.gameConsole.system(`${region} tension adjusted by ${value}`);
         });
     }
 
-    adjustDiplomaticRelations(country, value) {
-        // Implement diplomatic relations adjustment logic
-        this.gameConsole.system(`${country} diplomatic relations adjusted by ${value}`);
+    formatNumber(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 
     handleInitializationError(error) {
@@ -311,6 +354,10 @@ class GameLoader {
 
     delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    filterByRegion(region) {
+        this.earthMap.highlightRegion(region);
     }
 }
 
@@ -324,7 +371,7 @@ class GameUI {
 
     updateGameTime(time) {
         if (this.timeDisplay) {
-            this.timeDisplay.textContent = time.toISOString().replace('T', ' ').split('.')[0];
+            this.timeDisplay.textContent = `TIME: ${time.toISOString().replace('T', ' ').split('.')[0]}`;
         }
     }
 }
@@ -332,6 +379,7 @@ class GameUI {
 class GameConsole {
     constructor() {
         this.console = document.getElementById('gameConsole');
+        this.maxLines = 100;
     }
 
     log(message, type = 'info') {
@@ -341,6 +389,11 @@ class GameConsole {
         line.textContent = `[${timestamp}] ${message}`;
         this.console.appendChild(line);
         this.console.scrollTop = this.console.scrollHeight;
+
+        // Trim old messages if needed
+        while (this.console.children.length > this.maxLines) {
+            this.console.removeChild(this.console.firstChild);
+        }
     }
 
     system(message) { this.log(message, 'system'); }
@@ -348,6 +401,12 @@ class GameConsole {
     warning(message) { this.log(message, 'warning'); }
     error(message) { this.log(message, 'error'); }
     success(message) { this.log(message, 'success'); }
+
+    clear() {
+        while (this.console.firstChild) {
+            this.console.removeChild(this.console.firstChild);
+        }
+    }
 }
 
 // Start the game when the document is ready
