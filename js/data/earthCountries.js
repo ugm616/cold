@@ -164,7 +164,7 @@ const EARTH_COUNTRIES_1985 = {
         historicalContext: `Frontline NATO state. Economic miracle continues under
                           Kohl government. Ostpolitik maintaining dialogue with East.
                           Growing influence in European Community.`
-    }
+    },
 
     ITALY: {
         name: "Italy",
@@ -339,7 +339,7 @@ const EARTH_COUNTRIES_1985 = {
         historicalContext: `Controlling Baltic approaches. Alternative security policies
                           within NATO. Strong welfare state. Growing environmental
                           consciousness.`
-    }
+    },
 
     USSR: {
         name: "Soviet Union",
@@ -567,7 +567,7 @@ const EARTH_COUNTRIES_1985 = {
         historicalContext: `Post-Tito era showing federal strains. Severe economic
                           crisis and IMF programs. Non-aligned leadership role.
                           Growing nationalist tensions.`
-    }
+    },
 
     CHINA: {
         name: "People's Republic of China",
@@ -719,7 +719,7 @@ const EARTH_COUNTRIES_1985 = {
         historicalContext: `Strong Soviet ally. Batmönkh becoming leader. Economic
                           integration with USSR. Traditional lifestyle declining.
                           Early signs of reform interest.`
-    }
+    },
 
     VIETNAM: {
         name: "Socialist Republic of Vietnam",
@@ -944,7 +944,7 @@ const EARTH_COUNTRIES_1985 = {
         historicalContext: `Recently independent (1984). Sultan Hassanal Bolkiah.
                           Oil wealth providing stability. British forces remaining.
                           Conservative Islamic state.`
-    }
+    },
 
     IRAN: {
         name: "Islamic Republic of Iran",
@@ -1120,7 +1120,7 @@ const EARTH_COUNTRIES_1985 = {
         historicalContext: `King Hussein's balanced policy. Pro-Iraq in Gulf War.
                           Palestinian issue sensitive. Western military aid.
                           Economic development focus.`
-    }
+    },
 
     LEBANON: {
         name: "Lebanese Republic",
@@ -1320,7 +1320,7 @@ const EARTH_COUNTRIES_1985 = {
         historicalContext: `Isa Al Khalifa's rule. US military presence.
                           Sectarian tensions underlying. Banking sector
                           growing. Oil income declining.`
-    }
+    },
 
     LIBYA: {
         name: "Socialist People's Libyan Arab Jamahiriya",
@@ -1495,7 +1495,7 @@ const EARTH_COUNTRIES_1985 = {
         historicalContext: `Barre regime weakening. US military access.
                           Clan-based opposition growing. Ethiopian
                           conflict aftermath. Drought effects.`
-    }
+    },
 
     NIGERIA: {
         name: "Federal Republic of Nigeria",
@@ -1670,7 +1670,7 @@ const EARTH_COUNTRIES_1985 = {
         historicalContext: `Conté consolidating power. Post-Sékou Touré
                           reforms. Mining sector focus. Reducing Soviet
                           influence. Regional role limited.`
-    }
+    },
 
     BURKINAFASO: {
         name: "Burkina Faso",
@@ -1845,7 +1845,7 @@ const EARTH_COUNTRIES_1985 = {
         historicalContext: `Sassou-Nguesso leadership. Soviet ties strong.
                           Oil revenue important. Some economic opening.
                           Regional stability role.`
-    }
+    },
 
     CHAD: {
         name: "Republic of Chad",
@@ -2020,7 +2020,7 @@ const EARTH_COUNTRIES_1985 = {
         historicalContext: `Habyarimana's control solid. Ethnic quotas
                           system. Coffee price impact. Development aid
                           dependent. Regional tensions hidden.`
-    }
+    },
 
     SOUTHAFRICA: {
         name: "Republic of South Africa",
@@ -2197,7 +2197,7 @@ const EARTH_COUNTRIES_1985 = {
         historicalContext: `Independence negotiations ongoing. SA control
                           continuing. SWAPO insurgency. UN Resolution 435
                           implementation delayed. Cuban link to withdrawal.`
-    }
+    },
 
     BRAZIL: {
         name: "Federative Republic of Brazil",
@@ -2372,7 +2372,7 @@ const EARTH_COUNTRIES_1985 = {
         historicalContext: `Lusinchi presidency. Oil price crisis impact.
                           Democratic stability. Currency crisis. Regional
                           leadership attempts. OPEC role.`
-    }
+    },
 
     NICARAGUA: {
         name: "Republic of Nicaragua",
@@ -2522,7 +2522,7 @@ const EARTH_COUNTRIES_1985 = {
         historicalContext: `Noriega regime consolidating. US relations
                           strained. Drug allegations growing. Canal
                           handover pending. Opposition organizing.`
-    }
+    },
 
     CUBA: {
         name: "Republic of Cuba",
@@ -2672,7 +2672,7 @@ const EARTH_COUNTRIES_1985 = {
         historicalContext: `Post-1983 intervention phase. Blaize government.
                           Democracy restored. US aid significant. Regional
                           security arrangements new.`
-    }
+    },
 
     BOLIVIA: {
         name: "Republic of Bolivia",
@@ -2822,7 +2822,7 @@ const EARTH_COUNTRIES_1985 = {
         historicalContext: `Bouterse's military rule. Dutch aid cut.
                           Jungle warfare beginning. Economic problems.
                           Regional isolation growing.`
-    }
+    },
 
     AUSTRALIA: {
         name: "Commonwealth of Australia",
@@ -2973,7 +2973,6 @@ const EARTH_COUNTRIES_1985 = {
                           Franco-British aid. Regional activism.
                           Development priorities.`
     }
-};
 
 // This completes the world country data for 1985, including:
 // - All major powers and regional players
@@ -2997,7 +2996,5 @@ const EARTH_COUNTRIES_1985 = {
 // 2. Enhance any particular aspects of the existing data?
 // 3. Add additional game mechanics or interaction rules?
 // 4. Create supporting documentation or gameplay guides?
-
-How would you like to proceed?
 
 };
