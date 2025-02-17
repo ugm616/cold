@@ -7,11 +7,26 @@ class EarthMap {
         this.zoomLevel = 1;
         this.mapOffset = { x: 0, y: 0 };
         
+        // Set canvas size to match container
+        this.canvas.width = this.canvas.parentElement.clientWidth;
+        this.canvas.height = this.canvas.parentElement.clientHeight;
+        
+        // Initialize borders and styles
+        this.borders = COUNTRY_BORDERS_1985;
+        this.regionGroups = REGION_GROUPS;
+        this.allianceStyles = ALLIANCE_STYLES;
+        
         // Load country data
         this.initializeCountries();
         
         // Set up event listeners
         this.setupEventListeners();
+
+        // Initialize pan and zoom state
+        this.isDragging = false;
+        this.lastMousePos = { x: 0, y: 0 };
+        this.minZoom = 0.5;
+        this.maxZoom = 4;
     }
 
     initializeCountries() {
@@ -19,6 +34,7 @@ class EarthMap {
         Object.entries(EARTH_COUNTRIES_1985).forEach(([key, data]) => {
             this.countries.set(key, {
                 ...data,
+                id: key,
                 borders: this.getCountryBorders(key),
                 path: this.getCountryPath(key)
             });
@@ -29,7 +45,7 @@ class EarthMap {
     }
 
     initializeAlliances() {
-        Object.entries(INITIAL_ALLIANCES).forEach(([alliance, members]) => {
+        Object.entries(this.regionGroups).forEach(([alliance, members]) => {
             members.forEach(countryKey => {
                 const country = this.countries.get(countryKey);
                 if (country) {
@@ -40,9 +56,11 @@ class EarthMap {
     }
 
     setupEventListeners() {
-        this.canvas.addEventListener('click', (e) => this.handleClick(e));
+        this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
         this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+        this.canvas.addEventListener('mouseup', () => this.handleMouseUp());
         this.canvas.addEventListener('wheel', (e) => this.handleZoom(e));
+        this.canvas.addEventListener('mouseleave', () => this.handleMouseLeave());
     }
 
     render() {
@@ -55,6 +73,9 @@ class EarthMap {
         this.ctx.translate(this.mapOffset.x, this.mapOffset.y);
         this.ctx.scale(this.zoomLevel, this.zoomLevel);
 
+        // Draw map grid
+        this.drawGrid();
+
         // Render each country
         this.countries.forEach(country => {
             this.renderCountry(country);
@@ -64,135 +85,139 @@ class EarthMap {
     }
 
     renderCountry(country) {
-        // Draw country shape
-        const path = new Path2D(country.path);
-        
-        // Fill country
-        this.ctx.fillStyle = country === this.selectedCountry ? 
-            this.lightenColor(country.color) : country.color;
-        this.ctx.fill(path);
-        
-        // Draw borders
-        this.ctx.strokeStyle = '#FFFFFF';
-        this.ctx.lineWidth = 0.5;
-        this.ctx.stroke(path);
-    }
+        const borders = this.getCountryBorders(country.id);
+        if (borders.length === 0) return;
 
-    handleClick(event) {
-        const rect = this.canvas.getBoundingClientRect();
-        const x = (event.clientX - rect.left - this.mapOffset.x) / this.zoomLevel;
-        const y = (event.clientY - rect.top - this.mapOffset.y) / this.zoomLevel;
-
-        // Find clicked country
-        this.countries.forEach(country => {
-            if (this.ctx.isPointInPath(country.path, x, y)) {
-                this.selectCountry(country);
-            }
-        });
-    }
-
-    selectCountry(country) {
-        this.selectedCountry = country;
-        this.render();
+        this.ctx.beginPath();
         
-        // Update UI with country info
-        if (gameUI) {
-            gameUI.updateCountryInfo(country);
-        }
+        // Move to first point
+        const start = this.transformCoordinates(borders[0]);
+        this.ctx.moveTo(start.x, start.y);
         
-        // Log to console
-        if (gameConsole) {
-            gameConsole.log(`Selected ${country.name}`);
-        }
-    }
-
-        // Helper methods
-    lightenColor(color) {
-        // Convert hex to RGB, lighten, then convert back to hex
-        const hex = color.replace('#', '');
-        const r = parseInt(hex.substr(0, 2), 16);
-        const g = parseInt(hex.substr(2, 2), 16);
-        const b = parseInt(hex.substr(4, 2), 16);
-        
-        // Lighten by 20%
-        const lightenAmount = 0.2;
-        const newR = Math.min(Math.round(r + (255 - r) * lightenAmount), 255);
-        const newG = Math.min(Math.round(g + (255 - g) * lightenAmount), 255);
-        const newB = Math.min(Math.round(b + (255 - b) * lightenAmount), 255);
-        
-        // Convert back to hex
-        return `#${(newR).toString(16).padStart(2, '0')}${
-            (newG).toString(16).padStart(2, '0')}${
-            (newB).toString(16).padStart(2, '0')}`;
-    }
-
-    getCountryBorders(countryKey) {
-        // Get country border data from the EARTH_COUNTRIES_1985 data
-        const country = EARTH_COUNTRIES_1985[countryKey];
-        if (!country || !country.borders) {
-            // Return default placeholder borders if none defined
-            return [
-                { x: 0, y: 0 },
-                { x: 50, y: 0 },
-                { x: 50, y: 50 },
-                { x: 0, y: 50 }
-            ];
-        }
-        
-        // Transform coordinates based on map projection and scale
-        return country.borders.map(point => ({
-            x: this.transformLongitude(point.longitude),
-            y: this.transformLatitude(point.latitude)
-        }));
-    }
-
-    getCountryPath(countryKey) {
-        const borders = this.getCountryBorders(countryKey);
-        if (!borders || borders.length < 3) {
-            return ''; // Return empty path if invalid borders
-        }
-
-        // Create SVG path
-        let path = `M ${borders[0].x} ${borders[0].y}`;
-        
-        // Add line segments for each point
+        // Draw lines to each subsequent point
         for (let i = 1; i < borders.length; i++) {
-            path += ` L ${borders[i].x} ${borders[i].y}`;
+            const point = this.transformCoordinates(borders[i]);
+            this.ctx.lineTo(point.x, point.y);
         }
         
         // Close the path
-        path += ' Z';
+        this.ctx.closePath();
+
+        // Fill with country color
+        const alliance = this.getCountryAlliance(country.id);
+        const style = this.allianceStyles[alliance] || this.allianceStyles.NEUTRAL;
         
-        return path;
+        this.ctx.fillStyle = country === this.selectedCountry ? 
+            style.highlightColor : style.color;
+        this.ctx.fill();
+        
+        // Draw borders
+        this.ctx.strokeStyle = style.borderColor;
+        this.ctx.lineWidth = 1;
+        this.ctx.stroke();
     }
 
-    // Additional helper methods for coordinate transformation
-    transformLongitude(longitude) {
-        // Convert longitude to x coordinate
-        // Map from -180...180 to 0...canvas.width
-        const scale = this.canvas.width / 360;
-        return (longitude + 180) * scale;
+    drawGrid() {
+        const gridSize = 30; // Size of grid cells in degrees
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        this.ctx.lineWidth = 0.5;
+
+        // Draw longitude lines
+        for (let lon = -180; lon <= 180; lon += gridSize) {
+            const x = this.transformLongitude(lon);
+            this.ctx.beginPath();
+            this.ctx.moveTo(x, 0);
+            this.ctx.lineTo(x, this.canvas.height);
+            this.ctx.stroke();
+        }
+
+        // Draw latitude lines
+        for (let lat = -90; lat <= 90; lat += gridSize) {
+            const y = this.transformLatitude(lat);
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, y);
+            this.ctx.lineTo(this.canvas.width, y);
+            this.ctx.stroke();
+        }
     }
 
-    transformLatitude(latitude) {
-        // Convert latitude to y coordinate using Mercator projection
-        // Map from -90...90 to canvas.height...0
-        const latRad = (latitude * Math.PI) / 180;
-        const mercN = Math.log(Math.tan((Math.PI / 4) + (latRad / 2)));
-        const scale = this.canvas.height / (2 * Math.PI);
-        return this.canvas.height / 2 - mercN * scale;
+    handleMouseDown(event) {
+        this.isDragging = true;
+        this.lastMousePos = {
+            x: event.clientX,
+            y: event.clientY
+        };
     }
 
-    // Add methods for inverse transformations (screen coordinates to lat/long)
-    screenToLongitude(x) {
-        const scale = 360 / this.canvas.width;
-        return (x * scale) - 180;
+    handleMouseMove(event) {
+        if (this.isDragging) {
+            const deltaX = event.clientX - this.lastMousePos.x;
+            const deltaY = event.clientY - this.lastMousePos.y;
+
+            this.mapOffset.x += deltaX;
+            this.mapOffset.y += deltaY;
+
+            this.lastMousePos = {
+                x: event.clientX,
+                y: event.clientY
+            };
+
+            this.render();
+        } else {
+            // Hover effect
+            const pos = this.getMousePosition(event);
+            const hoveredCountry = this.getCountryAt(pos.x, pos.y);
+            if (hoveredCountry !== this.hoveredCountry) {
+                this.hoveredCountry = hoveredCountry;
+                this.render();
+            }
+        }
     }
 
-    screenToLatitude(y) {
-        const scale = (2 * Math.PI) / this.canvas.height;
-        const mercN = (this.canvas.height / 2 - y) * scale;
-        const latRad = 2 * (Math.atan(Math.exp(mercN)) - Math.PI / 4);
-        return (latRad * 180) / Math.PI;
+    handleMouseUp() {
+        this.isDragging = false;
     }
-}
+
+    handleMouseLeave() {
+        this.isDragging = false;
+        this.hoveredCountry = null;
+        this.render();
+    }
+
+    handleZoom(event) {
+        event.preventDefault();
+        
+        const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
+        const newZoom = this.zoomLevel * zoomFactor;
+
+        if (newZoom >= this.minZoom && newZoom <= this.maxZoom) {
+            // Get mouse position before zoom
+            const mousePos = this.getMousePosition(event);
+            
+            // Apply zoom
+            this.zoomLevel = newZoom;
+            
+            // Adjust offset to zoom toward mouse position
+            this.mapOffset.x = mousePos.x - (mousePos.x - this.mapOffset.x) * zoomFactor;
+            this.mapOffset.y = mousePos.y - (mousePos.y - this.mapOffset.y) * zoomFactor;
+            
+            this.render();
+        }
+    }
+
+    getMousePosition(event) {
+        const rect = this.canvas.getBoundingClientRect();
+        return {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top
+        };
+    }
+
+    getCountryAt(x, y) {
+        // Convert screen coordinates to map coordinates
+        const mapX = (x - this.mapOffset.x) / this.zoomLevel;
+        const mapY = (y - this.mapOffset.y) / this.zoomLevel;
+
+        // Convert to longitude/latitude
+        const lon = this.screenToLongitude(mapX);
+        const lat = this.screenToLatitude(mapY); ▋
