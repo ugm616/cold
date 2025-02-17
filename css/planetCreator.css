@@ -1,0 +1,97 @@
+.creator-form {
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text-color);
+}
+
+.retro-input {
+    background: var(--main-bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 5px 10px;
+    width: 100%;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.retro-input:focus {
+    outline: none;
+    border-color: var(--highlight-color);
+    box-shadow: 0 0 5px var(--highlight-color);
+}
+
+.country-form {
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.military-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.drawing-instructions {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid var(--border-color);
+    padding: 20px;
+    text-align: center;
+    color: var(--text-color);
+    z-index: 1000;
+}
+
+.drawing-instructions p {
+    margin: 10px 0;
+}
+
+.country-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    padding-right: 10px;
+}
+
+.country-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.country-list::-webkit-scrollbar-track {
+    background: var(--main-bg-color);
+}
+
+.country-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+}
+
+.retro-btn {
+    background: var(--main-bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    cursor: pointer;
+    font-family: 'Courier New', Courier, monospace;
+    transition: all 0.2s ease;
+}
+
+.retro-btn:hover {
+    background: var(--highlight-color);
+    color: var(--main-bg-color);
+}
+
+.retro-btn:active {
+    transform: translateY(1px);
+}

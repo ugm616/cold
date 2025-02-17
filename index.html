@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Strategy Game</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/retro.css">
+    <link rel="stylesheet" href="css/planetCreator.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="title">GLOBAL STRATEGY 1985</div>
+            <div class="menu-bar">
+                <button class="menu-btn" onclick="openMenu('allies')">ALLIES</button>
+                <button class="menu-btn" onclick="openMenu('upgrades')">UPGRADES</button>
+                <button class="menu-btn" onclick="openMenu('stats')">STATS</button>
+                <button class="menu-btn" onclick="openMenu('help')">HELP</button>
+                <button class="menu-btn" id="createPlanetBtn">NEW PLANET</button>
+            </div>
+            <div class="user-info">
+                <span class="user-login">CMDR: ${ugm616}</span>
+                <span class="game-time">TIME: 1985-01-01 00:00:00</span>
+            </div>
+        </div>
+
+        <!-- Main Game Area -->
+        <div class="game-area">
+            <!-- Left Panel - Planet List -->
+            <div class="side-panel left-panel">
+                <div class="panel-header">PLANETS</div>
+                <div class="planet-list" id="planetList">
+                    <!-- Planets will be listed here -->
+                </div>
+            </div>
+
+            <!-- Center - Game Map -->
+            <div class="map-container">
+                <canvas id="gameCanvas"></canvas>
+                <div class="map-controls">
+                    <div class="zoom-controls">
+                        <button class="control-btn" onclick="mapSystem.zoom(1.1)">+</button>
+                        <button class="control-btn" onclick="mapSystem.zoom(0.9)">-</button>
+                    </div>
+                    <div class="navigation-hint">
+                        DRAG TO PAN - SCROLL TO ZOOM
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Country Info -->
+            <div class="side-panel right-panel">
+                <div class="panel-header">COUNTRY INFO</div>
+                <div class="country-info" id="countryDetails">
+                    <!-- Selected country details will appear here -->
+                </div>
+                <div class="resources-panel">
+                    <div class="panel-header">RESOURCES</div>
+                    <div id="playerResources">
+                        <!-- Player's resources will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Console -->
+        <div class="console-output" id="gameConsole">
+            <div class="console-header">
+                <span>COMMAND CONSOLE</span>
+                <button class="control-btn" onclick="clearConsole()">CLEAR</button>
+            </div>
+            <div class="console-content">
+                <!-- Game messages will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Templates -->
+    <div id="modalOverlay" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title"></span>
+                <button class="close-btn" onclick="closeModal()">X</button>
+            </div>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Help Modal Template -->
+    <div id="helpModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">HELP SYSTEM</span>
+                <button class="close-btn" onclick="closeHelp()">X</button>
+            </div>
+            <div class="modal-body help-content">
+                <div class="help-section">
+                    <h3>BASIC CONTROLS</h3>
+                    <ul>
+                        <li>LEFT CLICK: Select Country</li>
+                        <li>DRAG: Pan Map</li>
+                        <li>SCROLL: Zoom In/Out</li>
+                        <li>ESC: Cancel Action</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h3>GAME CONCEPTS</h3>
+                    <ul>
+                        <li>Population determines base troops</li>
+                        <li>Technology affects combat strength</li>
+                        <li>Allies share movement bonuses</li>
+                        <li>Navy improves sea movement</li>
+                        <li>Air Force improves land movement</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-title">GLOBAL STRATEGY 1985</div>
+            <div class="loading-bar">
+                <div class="progress-bar"></div>
+            </div>
+            <div class="loading-text">INITIALIZING SYSTEMS...</div>
+        </div>
+    </div>
+
+    <!-- Game Scripts -->
+    <script src="js/mapSystem.js"></script>
+    <script src="js/planet.js"></script>
+    <script src="js/planetCreator.js"></script>
+    <script src="js/country.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/gameConsole.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
