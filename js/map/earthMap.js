@@ -418,5 +418,7 @@ class EarthMap {
     }
 
     setZoom(zoomLevel) {
-        const newZoom = Math.min(Math.max(zoomLevel, this.minZoom), this.maxZoom);
-        this.zoomLevel = newZoom;
+    const newZoom = Math.min(Math.max(zoomLevel, this.minZoom), this.maxZoom);
+    this.zoomLevel = newZoom;
+    this.render();
+}
