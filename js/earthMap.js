@@ -220,4 +220,119 @@ class EarthMap {
 
         // Convert to longitude/latitude
         const lon = this.screenToLongitude(mapX);
-        const lat = this.screenToLatitude(mapY); ▋
+        const lat = this.screenToLatitude(mapY);
+
+        // Check each country
+        for (const [id, country] of this.countries) {
+            if (this.isPointInCountry(lon, lat, country)) {
+                return country;
+            }
+        }
+        return null;
+    }
+
+    isPointInCountry(lon, lat, country) {
+        const borders = this.getCountryBorders(country.id);
+        if (!borders || borders.length < 3) return false;
+
+        let inside = false;
+        for (let i = 0, j = borders.length - 1; i < borders.length; j = i++) {
+            const xi = borders[i].longitude, yi = borders[i].latitude;
+            const xj = borders[j].longitude, yj = borders[j].latitude;
+
+            const intersect = ((yi > lat) !== (yj > lat)) &&
+                (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+
+        return inside;
+    }
+
+    // Helper methods
+    transformCoordinates(point) {
+        return {
+            x: this.transformLongitude(point.longitude),
+            y: this.transformLatitude(point.latitude)
+        };
+    }
+
+    transformLongitude(longitude) {
+        // Convert longitude to x coordinate
+        // Map from -180...180 to 0...canvas.width
+        const scale = this.canvas.width / 360;
+        return (longitude + 180) * scale;
+    }
+
+    transformLatitude(latitude) {
+        // Convert latitude to y coordinate using Mercator projection
+        // Map from -90...90 to canvas.height...0
+        const latRad = (latitude * Math.PI) / 180;
+        const mercN = Math.log(Math.tan((Math.PI / 4) + (latRad / 2)));
+        const scale = this.canvas.height / (2 * Math.PI);
+        return this.canvas.height / 2 - mercN * scale;
+    }
+
+    screenToLongitude(x) {
+        const scale = 360 / this.canvas.width;
+        return (x * scale) - 180;
+    }
+
+    screenToLatitude(y) {
+        const scale = (2 * Math.PI) / this.canvas.height;
+        const mercN = (this.canvas.height / 2 - y) * scale;
+        const latRad = 2 * (Math.atan(Math.exp(mercN)) - Math.PI / 4);
+        return (latRad * 180) / Math.PI;
+    }
+
+    getCountryBorders(countryKey) {
+        const countryData = this.borders[countryKey];
+        if (!countryData || !countryData.borders) {
+            console.warn(`No border data found for country: ${countryKey}`);
+            return [];
+        }
+        return countryData.borders;
+    }
+
+    getCountryPath(countryKey) {
+        const borders = this.getCountryBorders(countryKey);
+        if (!borders || borders.length < 3) {
+            return ''; // Return empty path if invalid borders
+        }
+
+        // Create SVG path
+        const points = borders.map(point => {
+            const transformed = this.transformCoordinates(point);
+            return `${transformed.x},${transformed.y}`;
+        });
+        
+        return `M ${points.join(' L ')} Z`;
+    }
+
+    getCountryAlliance(countryId) {
+        for (const [alliance, countries] of Object.entries(this.regionGroups)) {
+            if (countries.includes(countryId)) {
+                return alliance;
+            }
+        }
+        return 'NEUTRAL';
+    }
+
+    lightenColor(color) {
+        // Convert hex to RGB, lighten, then convert back to hex
+        const hex = color.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        
+        // Lighten by 20%
+        const lightenAmount = 0.2;
+        const newR = Math.min(Math.round(r + (255 - r) * lightenAmount), 255);
+        const newG = Math.min(Math.round(g + (255 - g) * lightenAmount), 255);
+        const newB = Math.min(Math.round(b + (255 - b) * lightenAmount), 255);
+        
+        // Convert back to hex
+        return `#${(newR).toString(16).padStart(2, '0')}${
+            (newG).toString(16).padStart(2, '0')}${
+            (newB).toString(16).padStart(2, '0')}`;
+    }
+}
