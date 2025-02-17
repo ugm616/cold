@@ -23,17 +23,19 @@
             <div class="user-info">
                 <span class="user-login">CMDR: ugm616</span>
                 <span class="game-time" id="timeDisplay">TIME: 1985-01-01 00:00:00</span>
-                <span class="real-time">REAL: 2025-02-17 14:36:28</span>
+                <span class="real-time" id="realTimeDisplay">REAL: 2025-02-17 15:17:32</span>
             </div>
         </div>
 
         <!-- Main Game Area -->
         <div class="game-area">
-            <!-- Left Panel - Planet List -->
+            <!-- Left Panel - Country List -->
             <div class="side-panel left-panel">
-                <div class="panel-header">PLANETS</div>
-                <div class="planet-list" id="planetList">
-                    <!-- Planets will be listed here -->
+                <div class="panel-header">REGIONS</div>
+                <div class="region-list" id="regionList">
+                    <div class="region-item" data-region="NATO">NATO</div>
+                    <div class="region-item" data-region="WARSAW_PACT">WARSAW PACT</div>
+                    <div class="region-item" data-region="NON_ALIGNED">NON-ALIGNED</div>
                 </div>
             </div>
 
@@ -42,13 +44,13 @@
                 <canvas id="gameCanvas"></canvas>
                 <div class="map-controls">
                     <div class="zoom-controls">
-                        <button class="control-btn" id="zoomInBtn">+</button>
-                        <button class="control-btn" id="zoomOutBtn">-</button>
+                        <button class="control-btn" id="zoomInBtn" title="Zoom In">+</button>
+                        <button class="control-btn" id="zoomOutBtn" title="Zoom Out">-</button>
                     </div>
                     <div class="time-controls">
-                        <button class="control-btn" id="pauseBtn">⏸️</button>
-                        <button class="control-btn" id="slowDownBtn">⏪</button>
-                        <button class="control-btn" id="speedUpBtn">⏩</button>
+                        <button class="control-btn" id="pauseBtn" title="Pause/Resume">⏸️</button>
+                        <button class="control-btn" id="slowDownBtn" title="Slow Down">⏪</button>
+                        <button class="control-btn" id="speedUpBtn" title="Speed Up">⏩</button>
                     </div>
                     <div class="navigation-hint">
                         DRAG TO PAN - SCROLL TO ZOOM
@@ -60,7 +62,10 @@
             <div class="side-panel right-panel">
                 <div class="panel-header">COUNTRY INFO</div>
                 <div class="country-info" id="countryDetails">
-                    <!-- Selected country details will appear here -->
+                    <div class="info-section">
+                        <h3 id="countryName">Select a country</h3>
+                        <div id="countryStats"></div>
+                    </div>
                 </div>
                 <div class="resources-panel">
                     <div class="panel-header">RESOURCES</div>
