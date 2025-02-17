@@ -1,29 +1,35 @@
-const HISTORICAL_EVENTS_1985 = {
-    COLD_WAR: {
-        name: "Cold War Tension",
-        description: "Global tension between NATO and Warsaw Pact reaches new heights.",
-        effects: {
-            "USA": { militaryReadiness: 1.2 },
-            "USSR": { militaryReadiness: 1.2 },
-            "EUROPE": { diplomaticTension: 1.5 }
-        }
+export const HISTORICAL_EVENTS_1985 = {
+    "1985-01-01": {
+        name: "Beginning of 1985",
+        description: "The start of a pivotal year in the Cold War",
+        effects: [
+            {
+                type: "GLOBAL_TENSION",
+                value: 5
+            }
+        ]
     },
-    
-    ARMS_RACE: {
-        name: "Nuclear Arms Race",
-        description: "Continued development of nuclear weapons and delivery systems.",
-        effects: {
-            "GLOBAL": { warRisk: 1.3 },
-            "NUCLEAR_POWERS": { militaryStrength: 1.4 }
-        }
+    "1985-01-20": {
+        name: "Reagan's Second Term Begins",
+        description: "Ronald Reagan is inaugurated for his second term as US President",
+        effects: [
+            {
+                type: "DIPLOMATIC",
+                country: "USA",
+                value: 2
+            }
+        ]
     },
-
-    ECONOMIC_FACTORS: {
-        name: "Global Economic Conditions",
-        description: "Oil prices stabilizing after 1970s crisis, but debt issues in developing nations.",
-        effects: {
-            "OPEC": { economy: 1.2 },
-            "DEVELOPING": { economy: 0.8 }
-        }
+    "1985-03-11": {
+        name: "Gorbachev Becomes Soviet Leader",
+        description: "Mikhail Gorbachev becomes leader of the Soviet Union",
+        effects: [
+            {
+                type: "DIPLOMATIC",
+                country: "USSR",
+                value: 3
+            }
+        ]
     }
+    // Add more historical events as needed
 };
