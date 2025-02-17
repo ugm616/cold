@@ -61,6 +61,15 @@ class EarthMap {
         this.canvas.addEventListener('mouseup', () => this.handleMouseUp());
         this.canvas.addEventListener('wheel', (e) => this.handleZoom(e));
         this.canvas.addEventListener('mouseleave', () => this.handleMouseLeave());
+        
+        // Add resize listener to handle window resizing
+        window.addEventListener('resize', () => this.handleResize());
+    }
+
+    handleResize() {
+        this.canvas.width = this.canvas.parentElement.clientWidth;
+        this.canvas.height = this.canvas.parentElement.clientHeight;
+        this.render();
     }
 
     render() {
@@ -115,29 +124,70 @@ class EarthMap {
         this.ctx.strokeStyle = style.borderColor;
         this.ctx.lineWidth = 1;
         this.ctx.stroke();
+
+        // Draw country label if zoomed in enough
+        if (this.zoomLevel > 2) {
+            this.drawCountryLabel(country);
+        }
+    }
+
+    drawCountryLabel(country) {
+        const borders = this.getCountryBorders(country.id);
+        if (borders.length === 0) return;
+
+        // Calculate center point of country
+        let centerX = 0, centerY = 0;
+        borders.forEach(point => {
+            const transformed = this.transformCoordinates(point);
+            centerX += transformed.x;
+            centerY += transformed.y;
+        });
+        centerX /= borders.length;
+        centerY /= borders.length;
+
+        // Draw country name
+        this.ctx.fillStyle = '#FFFFFF';
+        this.ctx.font = '10px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(country.name || country.id, centerX, centerY);
     }
 
     drawGrid() {
-        const gridSize = 30; // Size of grid cells in degrees
+        const lonGridSize = 30; // Size of longitude grid cells in degrees
+        const latGridSize = 15; // Size of latitude grid cells in degrees
         this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         this.ctx.lineWidth = 0.5;
 
         // Draw longitude lines
-        for (let lon = -180; lon <= 180; lon += gridSize) {
+        for (let lon = -180; lon <= 180; lon += lonGridSize) {
             const x = this.transformLongitude(lon);
             this.ctx.beginPath();
             this.ctx.moveTo(x, 0);
             this.ctx.lineTo(x, this.canvas.height);
             this.ctx.stroke();
+
+            // Draw longitude labels
+            if (this.zoomLevel > 1.5) {
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                this.ctx.font = '10px Arial';
+                this.ctx.fillText(`${lon}°`, x, this.canvas.height - 5);
+            }
         }
 
         // Draw latitude lines
-        for (let lat = -90; lat <= 90; lat += gridSize) {
+        for (let lat = -90; lat <= 90; lat += latGridSize) {
             const y = this.transformLatitude(lat);
             this.ctx.beginPath();
             this.ctx.moveTo(0, y);
             this.ctx.lineTo(this.canvas.width, y);
             this.ctx.stroke();
+
+            // Draw latitude labels
+            if (this.zoomLevel > 1.5) {
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                this.ctx.font = '10px Arial';
+                this.ctx.fillText(`${lat}°`, 5, y);
+            }
         }
     }
 
@@ -248,7 +298,6 @@ class EarthMap {
         return inside;
     }
 
-    // Helper methods
     transformCoordinates(point) {
         return {
             x: this.transformLongitude(point.longitude),
@@ -265,10 +314,10 @@ class EarthMap {
 
     transformLatitude(latitude) {
         // Convert latitude to y coordinate using Mercator projection
-        // Map from -90...90 to canvas.height...0
+        // Map from -90...90 to canvas.height...0 with proper aspect ratio
         const latRad = (latitude * Math.PI) / 180;
         const mercN = Math.log(Math.tan((Math.PI / 4) + (latRad / 2)));
-        const scale = this.canvas.height / (2 * Math.PI);
+        const scale = this.canvas.height / (4 * Math.PI); // Adjusted scale factor
         return this.canvas.height / 2 - mercN * scale;
     }
 
@@ -278,7 +327,7 @@ class EarthMap {
     }
 
     screenToLatitude(y) {
-        const scale = (2 * Math.PI) / this.canvas.height;
+        const scale = (4 * Math.PI) / this.canvas.height; // Adjusted to match new transformLatitude
         const mercN = (this.canvas.height / 2 - y) * scale;
         const latRad = 2 * (Math.atan(Math.exp(mercN)) - Math.PI / 4);
         return (latRad * 180) / Math.PI;
@@ -330,9 +379,10 @@ class EarthMap {
         const newG = Math.min(Math.round(g + (255 - g) * lightenAmount), 255);
         const newB = Math.min(Math.round(b + (255 - b) * lightenAmount), 255);
         
-        // Convert back to hex
         return `#${(newR).toString(16).padStart(2, '0')}${
             (newG).toString(16).padStart(2, '0')}${
             (newB).toString(16).padStart(2, '0')}`;
     }
 }
+
+export default EarthMap;
