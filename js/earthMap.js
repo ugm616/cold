@@ -9,6 +9,7 @@ class EarthMap {
         this.ctx = this.canvas.getContext('2d');
         this.countries = new Map();
         this.selectedCountry = null;
+        this.hoveredCountry = null;
         this.zoomLevel = 1;
         this.mapOffset = { x: 0, y: 0 };
         
@@ -32,6 +33,9 @@ class EarthMap {
         this.lastMousePos = { x: 0, y: 0 };
         this.minZoom = 0.5;
         this.maxZoom = 4;
+
+        // Initial render
+        this.render();
     }
 
     initializeCountries() {
@@ -66,9 +70,24 @@ class EarthMap {
         this.canvas.addEventListener('mouseup', () => this.handleMouseUp());
         this.canvas.addEventListener('wheel', (e) => this.handleZoom(e));
         this.canvas.addEventListener('mouseleave', () => this.handleMouseLeave());
+        this.canvas.addEventListener('click', (e) => this.handleClick(e));
         
         // Add resize listener to handle window resizing
         window.addEventListener('resize', () => this.handleResize());
+    }
+
+    handleClick(event) {
+        const pos = this.getMousePosition(event);
+        const clickedCountry = this.getCountryAt(pos.x, pos.y);
+        if (clickedCountry) {
+            this.selectedCountry = clickedCountry;
+            this.render();
+            // Dispatch custom event for country selection
+            const selectEvent = new CustomEvent('countrySelect', { 
+                detail: { country: clickedCountry }
+            });
+            this.canvas.dispatchEvent(selectEvent);
+        }
     }
 
     handleResize() {
@@ -95,7 +114,33 @@ class EarthMap {
             this.renderCountry(country);
         });
 
+        // Draw hover effect if needed
+        if (this.hoveredCountry && this.hoveredCountry !== this.selectedCountry) {
+            this.drawHoverEffect(this.hoveredCountry);
+        }
+
         this.ctx.restore();
+    }
+
+    drawHoverEffect(country) {
+        const borders = this.getCountryBorders(country.id);
+        if (borders.length === 0) return;
+
+        this.ctx.beginPath();
+        const start = this.transformCoordinates(borders[0]);
+        this.ctx.moveTo(start.x, start.y);
+        
+        for (let i = 1; i < borders.length; i++) {
+            const point = this.transformCoordinates(borders[i]);
+            this.ctx.lineTo(point.x, point.y);
+        }
+        
+        this.ctx.closePath();
+        
+        // Draw hover effect
+        this.ctx.strokeStyle = '#FFFFFF';
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
     }
 
     renderCountry(country) {
@@ -152,7 +197,7 @@ class EarthMap {
 
         // Draw country name
         this.ctx.fillStyle = '#FFFFFF';
-        this.ctx.font = '10px Arial';
+        this.ctx.font = `${Math.max(10, 10 * this.zoomLevel / 2)}px Arial`;
         this.ctx.textAlign = 'center';
         this.ctx.fillText(country.name || country.id, centerX, centerY);
     }
@@ -318,11 +363,12 @@ class EarthMap {
     }
 
     transformLatitude(latitude) {
-        // Convert latitude to y coordinate using Mercator projection
-        // Map from -90...90 to canvas.height...0 with proper aspect ratio
+        // Use Web Mercator projection for better proportions
         const latRad = (latitude * Math.PI) / 180;
+        if (latitude === 90) return 0;
+        if (latitude === -90) return this.canvas.height;
         const mercN = Math.log(Math.tan((Math.PI / 4) + (latRad / 2)));
-        const scale = this.canvas.height / (4 * Math.PI); // Adjusted scale factor
+        const scale = this.canvas.height / (2 * Math.PI);
         return this.canvas.height / 2 - mercN * scale;
     }
 
@@ -332,7 +378,7 @@ class EarthMap {
     }
 
     screenToLatitude(y) {
-        const scale = (4 * Math.PI) / this.canvas.height; // Adjusted to match new transformLatitude
+        const scale = (2 * Math.PI) / this.canvas.height;
         const mercN = (this.canvas.height / 2 - y) * scale;
         const latRad = 2 * (Math.atan(Math.exp(mercN)) - Math.PI / 4);
         return (latRad * 180) / Math.PI;
@@ -371,23 +417,6 @@ class EarthMap {
         return 'NEUTRAL';
     }
 
-    lightenColor(color) {
-        // Convert hex to RGB, lighten, then convert back to hex
-        const hex = color.replace('#', '');
-        const r = parseInt(hex.substr(0, 2), 16);
-        const g = parseInt(hex.substr(2, 2), 16);
-        const b = parseInt(hex.substr(4, 2), 16);
-        
-        // Lighten by 20%
-        const lightenAmount = 0.2;
-        const newR = Math.min(Math.round(r + (255 - r) * lightenAmount), 255);
-        const newG = Math.min(Math.round(g + (255 - g) * lightenAmount), 255);
-        const newB = Math.min(Math.round(b + (255 - b) * lightenAmount), 255);
-        
-        return `#${(newR).toString(16).padStart(2, '0')}${
-            (newG).toString(16).padStart(2, '0')}${
-            (newB).toString(16).padStart(2, '0')}`;
-    }
-}
-
-export default EarthMap;
+    setZoom(zoomLevel) {
+        const newZoom = Math.min(Math.max(zoomLevel, this.minZoom), this.maxZoom);
+        this.zoomLevel = newZoom;
