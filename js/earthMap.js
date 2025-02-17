@@ -106,16 +106,93 @@ class EarthMap {
         }
     }
 
-    // Helper methods
+        // Helper methods
     lightenColor(color) {
-        // Implementation of color lightening for hover effect
+        // Convert hex to RGB, lighten, then convert back to hex
+        const hex = color.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+        
+        // Lighten by 20%
+        const lightenAmount = 0.2;
+        const newR = Math.min(Math.round(r + (255 - r) * lightenAmount), 255);
+        const newG = Math.min(Math.round(g + (255 - g) * lightenAmount), 255);
+        const newB = Math.min(Math.round(b + (255 - b) * lightenAmount), 255);
+        
+        // Convert back to hex
+        return `#${(newR).toString(16).padStart(2, '0')}${
+            (newG).toString(16).padStart(2, '0')}${
+            (newB).toString(16).padStart(2, '0')}`;
     }
 
     getCountryBorders(countryKey) {
-        // Implementation to get country border coordinates
+        // Get country border data from the EARTH_COUNTRIES_1985 data
+        const country = EARTH_COUNTRIES_1985[countryKey];
+        if (!country || !country.borders) {
+            // Return default placeholder borders if none defined
+            return [
+                { x: 0, y: 0 },
+                { x: 50, y: 0 },
+                { x: 50, y: 50 },
+                { x: 0, y: 50 }
+            ];
+        }
+        
+        // Transform coordinates based on map projection and scale
+        return country.borders.map(point => ({
+            x: this.transformLongitude(point.longitude),
+            y: this.transformLatitude(point.latitude)
+        }));
     }
 
     getCountryPath(countryKey) {
-        // Implementation to get country SVG path
+        const borders = this.getCountryBorders(countryKey);
+        if (!borders || borders.length < 3) {
+            return ''; // Return empty path if invalid borders
+        }
+
+        // Create SVG path
+        let path = `M ${borders[0].x} ${borders[0].y}`;
+        
+        // Add line segments for each point
+        for (let i = 1; i < borders.length; i++) {
+            path += ` L ${borders[i].x} ${borders[i].y}`;
+        }
+        
+        // Close the path
+        path += ' Z';
+        
+        return path;
+    }
+
+    // Additional helper methods for coordinate transformation
+    transformLongitude(longitude) {
+        // Convert longitude to x coordinate
+        // Map from -180...180 to 0...canvas.width
+        const scale = this.canvas.width / 360;
+        return (longitude + 180) * scale;
+    }
+
+    transformLatitude(latitude) {
+        // Convert latitude to y coordinate using Mercator projection
+        // Map from -90...90 to canvas.height...0
+        const latRad = (latitude * Math.PI) / 180;
+        const mercN = Math.log(Math.tan((Math.PI / 4) + (latRad / 2)));
+        const scale = this.canvas.height / (2 * Math.PI);
+        return this.canvas.height / 2 - mercN * scale;
+    }
+
+    // Add methods for inverse transformations (screen coordinates to lat/long)
+    screenToLongitude(x) {
+        const scale = 360 / this.canvas.width;
+        return (x * scale) - 180;
+    }
+
+    screenToLatitude(y) {
+        const scale = (2 * Math.PI) / this.canvas.height;
+        const mercN = (this.canvas.height / 2 - y) * scale;
+        const latRad = 2 * (Math.atan(Math.exp(mercN)) - Math.PI / 4);
+        return (latRad * 180) / Math.PI;
     }
 }
